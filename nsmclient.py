@@ -483,7 +483,7 @@ def init(app_name, capabilities, requiredFunctions, optionalFunctions,
             setattr(client, identifier + '_cb', function)
 
     # Finally tell NSM we are ready and start the main loop
-    # __file__ stands for the executable name
+    # __main__.__file__ stands for the executable name
 
     # XXX: Funky!
     import __main__

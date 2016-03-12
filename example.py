@@ -84,18 +84,22 @@ capabilities = {
 ``requiredFunctions``
 ---------------------
 
-The ``save`` function must accept one argument and ``open`` two:
+All message handler callback functions receive the ``NSMClient`` instance
+as the first positional argument.
 
-First argument: The beginning of a path. NSM never creates directories or
+The ``save`` function must accept one additional argument and ``open`` two:
+
+``session_path``: both the ``open`` and the ``save `` callback receive a path
+prefix as the second positional argument. NSM never creates directories or
 paths. It is up to you what you do with the path. Append your file extension or
 use it as a directory (the directory approach is recommended). You only have to
-remember your naming scheme and use it every time. For example it is save, if
+remember your naming scheme and use it every time. For example it is safe, if
 your program is in session mode, to always just use
 ``"receivedPath/session.yourExtension"`` since it will be a unique path. The
 important part is that the filename, once it was created, must never change
 again.
 
-Second argument: ``open`` must accept a ``client_id`` string as the second
+``client_id``: ``open`` must accept a ``client_id`` string as the third
 positional argument. JACK ports may not be created until after ``open`` was
 called and must be prefixed with the received ``client_id``. Since ``open`` can
 reload other states (switching clients) this is done after ``open``, and not
@@ -149,6 +153,9 @@ requiredFunctions = {
 Optional functions
 ------------------
 
+All message handler callback functions receive the ``NSMClient`` instance
+as the first positional argument.
+
 Leave the dict-value as None to ignore a function.
 
 ``quit`` should be a function that cleans up. Do whatever you must do. Shutdown
@@ -175,13 +182,13 @@ NSM client which belongs to the session.
 """
 
 optionalFunctions = {
-    # Accept zero parameters. Return value is ignored.
+    # Accept one argument (client). Return value is ignored.
     "quit": None,
-    # Accept zero parameters. Return True or False.
+    # Accept one argument (client). Return True or False.
     "show_gui": None,
-    # Accept zero parameters. Return True or False.
+    # Accept one argument (client). Return True or False.
     "hide_gui": None,
-    # Accept zero parameters. Return value is ignored.
+    # Accept one argument (client). Return value is ignored.
     "session_loaded": None,
 }
 
@@ -196,16 +203,16 @@ client, process = nsmclient.init(
 Client message functions
 ------------------------
 
-Direct send-only functions for your program::
+Functions for your program to send information to the NSM server::
 
     # Report percentage during load, save and other heavy operations:
-    client.updateProgress(value from 0.1 to 1.0)
+    client.update_progress(value from 0.1 to 1.0)
 
     # Inform NSM of the save status. Are there unsaved changes?
-    client.setDirty(True or False)
+    client.set_dirty(True or False)
 
     # For a list of error codes: http://non.tuxfamily.org/nsm/API.html#n:1.2.5.
-    client.sendError(errorCode or String, message string)
+    client.send_error(message[, code=errorCode or String][, path=String])
 
 
 Event loop

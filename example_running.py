@@ -71,15 +71,16 @@ def quitty(client):
 
 
 optionalFunctions = {
-    # Accept zero parameters. Return True or False
+    # Accept one argument (client). Return value is ignored.
     "quit": quitty,
-    # Accept zero parameters. Return True or False
+    # Accept one argument (client). Return True or False.
     "show_gui": None,
-    # Accept zero parameters. Return True or False
+    # Accept one argument (client). Return True or False.
     "hide_gui": None,
-    # No return value needed.
+    # Accept one argument (client). Return value is ignored.
     "session_loaded": None,
 }
+
 
 logging.basicConfig(level=logging.DEBUG,
                     format="[%(name)s] %(levelname)s: %(message)s")
