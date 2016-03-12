@@ -192,7 +192,7 @@ optionalFunctions = {
     "session_loaded": None,
 }
 
-client, process = nsmclient.init(
+client = nsmclient.init(
     app_name=YourApplicationName,
     capabilities=capabilities,
     requiredFunctions=requiredFunctions,
@@ -218,17 +218,15 @@ Functions for your program to send information to the NSM server::
 Event loop
 ----------
 
-Instead of the while loop below, call the ``process`` function from your own
-event loop. Whatever that might be. A GUI event loop, a Python module, or
-indeed a while loop. Don't worry about performance in THIS while loop, don't
-input a sleep value. Choose a ms value in the init() function.
-
-If you are running this in a Qt timer or similar, good, unblocking manner just
-leave ``sleepValueMs`` at 0 ms because CPU load management is done by another
-part of the program. A ``sleepValueMs`` value greater than 0 is just for
-Python standalone purposes, instead of a ``time.sleep()``.
+The ``NSMCLient`` handles OSC messages in the background via a
+``liblo.ServerThread``. Your client just needs to stay alive by entering some
+kind of loop. When your client receives a SIGTERM signal from the NSM server,
+the quit callback is called, the OSC server thread is stopped and then the
+client exits.
 
 """
 
+import time
+
 while True:
-    process()
+    time.sleep(1)
