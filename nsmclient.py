@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""A Python clinet library for the Non Session Management protocol.
+"""A Python client library for the Non Session Management protocol.
 
 Author: Nils Gey ich@nilsgey.de http://www.nilsgey.de  April 2013.
 
