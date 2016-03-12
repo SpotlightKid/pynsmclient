@@ -52,9 +52,9 @@ Dependencies
 ------------
 
 * [Non Session Manager](http://non.tuxfamily.org/nsm/)
-* [liblo](http://liblo.sourceforge.net/) (tested with version 0.26)
+* [liblo](http://liblo.sourceforge.net/) (tested with version 0.28)
 * [pyliblo](http://das.nasophon.de/pyliblo/) - Python 3 bindings for liblo.
-  (tested with version 0.9.1)
+  (tested with version 0.10.0)
 
 
 License
