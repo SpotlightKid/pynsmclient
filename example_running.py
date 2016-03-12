@@ -90,7 +90,7 @@ client = nsmclient.init(
     capabilities=capabilities,
     requiredFunctions=requiredFunctions,
     optionalFunctions=optionalFunctions,
-    executable="testpynsm"
+    executable="pynsmclient"
 )
 
 while True:
