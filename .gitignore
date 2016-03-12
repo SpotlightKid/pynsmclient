@@ -1,4 +1,5 @@
 build/
-lib/
+dist/
 __pycache__
 .py[co]
+MANIFEST
