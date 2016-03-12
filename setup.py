@@ -11,7 +11,7 @@ setup(
     author="Nils Gey",
     author_email="ich@nilsgey.de",
     maintainer="Christopher Arndt",
-    maintainer_email="chris@chrisarndt.de"
+    maintainer_email="chris@chrisarndt.de",
     url="https://github.com/SpotlightKid/pynsmclient",
     description="""\
 Python nsmclient is a convenience wrapper around liblo and the NSM-OSC protocol
