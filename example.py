@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from sys import argv
-from os.path import join
 from time import sleep
 
 from nsmclient import NSMClient, CAP_MESSAGE, CAP_PROGRESS, CAP_SWITCH
@@ -20,12 +19,12 @@ class MyAppNSMClient(NSMClient):
     def open_session(self, session_path, client_id):
         print("open session", session_path, client_id)
         # status, filename_or_msg
-        return True, join(session_path, "myapp.dat")
+        return True, "myapp.dat"
 
     def save_session(self, session_path):
         print("save session", session_path)
         # status, filename_or_msg
-        return True, join(session_path, "myapp.dat")
+        return True, "myapp.dat"
 
     def session_quit(self, session_path):
         self.send_message("Preparing to quit. Wait for progress to finish.")
