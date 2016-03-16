@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from time import sleep
+from sys import argv
 from os.path import join
+from time import sleep
 
 from nsmclient import NSMClient, CAP_MESSAGE, CAP_PROGRESS, CAP_SWITCH
 
@@ -39,7 +40,8 @@ class MyAppNSMClient(NSMClient):
 
 if __name__ == '__main__':
     client = MyAppNSMClient(init=False)
-    client.init()
+    # executable name reported to NSM can be set via first command line arg
+    client.init(executable=argv[1] if len(argv) > 1 else None)
 
     while True:
         sleep(1)
