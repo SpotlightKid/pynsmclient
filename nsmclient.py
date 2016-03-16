@@ -338,7 +338,7 @@ class NSMClient(abc.ABC):
         /nsm/client/session_is_loaded
 
         """
-        self.session_loaded(self)
+        self.session_loaded()
 
     def handle_reply(self, path, args, types):
         """Handle /reply messages received from NSM server.
