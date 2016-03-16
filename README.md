@@ -18,8 +18,9 @@ Jonathan Moore Liles  <male@tuxfamily.org> http://non.tuxfamily.org/nsm/
 Purpose
 -------
 
-Python nsmclient is a convenience wrapper around liblo and the NSM-protocol to
-implement Non Session support easily in your own Python programs. You don't
+*nsmclient* is a Python 3 client library for the [Non Session Management]
+protocol and a convenience wrapper around a [liblo]-based [OSC] server and
+client, which makes it easy to support NSM in your Python programs. You don't
 need any OSC knowledge to use this package.
 
 
@@ -28,7 +29,7 @@ Instructions
 
 Copy `nsmclient.py` into your source directory or use
 
-    python3 setup.py install
+    python setup.py install
 
 to install `nsmclient.py` system-wide. Both variants are equally good. Just
 copying it to your own source tree does not require your users to install
@@ -70,8 +71,9 @@ Dependencies
 ------------
 
 * [Non Session Manager](http://non.tuxfamily.org/nsm/)
-* [liblo](http://liblo.sourceforge.net/) (tested with version 0.28)
-* [pyliblo](http://das.nasophon.de/pyliblo/) - Python 3 bindings for liblo.
+* [liblo](http://liblo.sourceforge.net/) - an OSC library written in C
+  (tested with version 0.28)
+* [pyliblo](http://das.nasophon.de/pyliblo/) - Python 3 bindings for liblo
   (tested with version 0.10.0)
 
 
@@ -90,3 +92,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+[Non Session Management]: http://non.tuxfamily.org/wiki/Non%20Session%20Manager
+[OSC]: http://opensouncontrol.org/
