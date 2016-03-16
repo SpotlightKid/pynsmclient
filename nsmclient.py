@@ -454,13 +454,19 @@ class NSMClient(object):
 
 def init(app_name, capabilities, requiredFunctions, optionalFunctions,
          startsWithGui=True, executable=None):
-    """Announce the client to the NSM server and set message handler functions.
+    """Create an NSMClient instance and announce it to the NSM server.
+
+    Also sets the message handler callback functions from the provided
+    lookup dictionaries.
 
     app_name = "Super Client"
 
-    Never change the app_name after your software is ready to use. The reported
-    filepath to load and more depends on this. Changing this is like telling
-    NSM we are a different program now.
+    You must not change the app_name after your software is released and used
+    in people's sessions. The NSM server provides a path for the session files
+    to your application and bases this on the app_name. Changing the app_name
+    would be like telling NSM we are a different program now.
+
+    Returns the created NSMClient instance.
 
     """
     state = ClientState(os.getenv("NSM_URL"))
