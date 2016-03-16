@@ -38,7 +38,10 @@ class MyAppNSMClient(NSMClient):
 
 
 if __name__ == '__main__':
+    # If you pass init=False, the client delays announcing itself to NSM and
+    # becoming part of the session until its init() method is called.
     client = MyAppNSMClient(init=False)
+
     # executable name reported to NSM can be set via first command line arg
     client.init(executable=argv[1] if len(argv) > 1 else None)
 
