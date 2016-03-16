@@ -35,7 +35,7 @@ with extensive comments.
 
 """
 
-import inspect
+import abc
 import logging
 import os
 import sys
@@ -70,6 +70,18 @@ MSG_LABEL = "/nsm/client/label"
 MSG_OPENED = '/nsm/server/open'
 MSG_SAVED = '/nsm/server/save'
 
+# client knows when it has unsaved changes
+CAP_DIRTY = "dirty"
+# client can send textual status updates
+CAP_MESSAGE = "message"
+# client can send progress updates during time-consuming operations
+CAP_PROGRESS = "progress"
+# client has an optional GUI
+CAP_OPTIONAL_GUI = "optional-gui"
+# client is capable of responding to multiple `open` messages without
+# restarting
+CAP_SWITCH = "switch"
+
 ERROR_CODES = {
     "ERR_GENERAL": -1,
     "ERR_INCOMPATIBLE_API": -2,
@@ -89,17 +101,18 @@ log = logging.getLogger(__name__)
 class ClientState(object):
     def __init__(self, env):
         # NSM reported the session is loaded
+        # set by NSMClient.session_loaded()
         self.session_loaded = False
         # NSM_URL environment variable
+        # set by NSMClient.init()
         self.nsm_url = env
         # set by NSMClient.handle_welcome()
         self.welcome_msg = None
+        # set by NSMClient.handle_welcome()
         self.nsm_name = None
+        # set by NSMClient.handle_welcome()
         # You can test it with "capability in self.server_capabilities"
         self.server_capabilities = set()
-        # set by init()
-        # You can test it with "capability in self.client_capabilities"
-        self.client_capabilities = set()
         # set by NSMClient.handle_open()
         self.path_prefix = None
         self.session_name = None
@@ -108,22 +121,11 @@ class ClientState(object):
         self.dirty = False
 
 
-class NSMClient(object):
-    def __init__(self, state, quit_on_error=False):
+class NSMClient(abc.ABC):
+    def __init__(self, init=True, quit_on_error=False, **kwargs):
         # A shortcut to the client state
-        self.state = state
         self.quit_on_error = quit_on_error
-
-        # Functions to implement
-        # Required functions
-        self.open_cb = self.unimplemented_cb
-        self.save_cb = self.unimplemented_cb
-
-        # Optional functions
-        self.quit_cb = self.unimplemented_cb
-        self.show_gui_cb = self.unimplemented_cb
-        self.hide_gui_cb = self.unimplemented_cb
-        self.session_loaded_cb = self.unimplemented_cb
+        self.timeout = 5
 
         # NSM sends SIGTERM to tell the program to quit,
         # so we install a handler method for this signal
@@ -152,14 +154,79 @@ class NSMClient(object):
         # And start the server thread
         osc_server.start()
 
+        if init:
+            self.init(**kwargs)
+
+    def init(self, show_gui=True, executable=None):
+        """Create an NSMClient instance and announce it to the NSM server.
+
+        Also sets the message handler callback functions from the provided
+        lookup dictionaries.
+
+        app_name = "Super Client"
+
+        You must not change the app_name after your software is released and
+        used in people's sessions. The NSM server provides a path for the
+        session files to your application and bases this on the app_name.
+        Changing the app_name would be like telling NSM we are a different
+        program now.
+
+        Returns the created NSMClient instance.
+
+        """
+        self.state = state = ClientState(os.getenv("NSM_URL"))
+
+        if not state.nsm_url:
+            raise RuntimeError(
+                "Non-Session-Manager environment variable $NSM_URL not found. "
+                "This program must be run via a Non session manager.")
+
+        # Finally tell NSM we are ready and start the main loop
+        # __main__.__file__ stands for the executable name
+
+        # XXX: Funky!
+        import __main__
+
+        if not executable:
+            filename = __main__.__file__
+            if dirname(filename) in os.environ["PATH"].split(os.pathsep):
+                executable = basename(filename)
+            else:
+                executable = abspath(filename)
+
+        self.announce(executable, os.getpid())
+
+        # Wait for the welcome message.
+        s = time.time()
+        while not state.welcome_msg:
+            time.sleep(.1)
+            if time.time() - s > self.timeout:
+                raise RuntimeError("No response from NSM server.")
+
+        # If the optional-gui capability is not present then clients with
+        # optional GUIs MUST always keep them visible
+        if "optional-gui" in self.capabilities:
+            if "optional-gui" in state.server_capabilities:
+                if show_gui:
+                    self.show_gui()
+                    self.send(MSG_GUI_SHOWN)
+                else:
+                    self.hide_gui()
+                    self.send(MSG_GUI_HIDDEN)
+            else:
+                # Call show_gui once.
+                # All other OSC messages from client will be ignored.
+                self.show_gui()
+                self.send(MSG_GUI_SHOWN)
+
     def _signal_handler(self, signal, frame):
         self.close()
 
-    def announce(self, app_name, executable, pid):
+    def announce(self, executable, pid):
         """Send announcement to server that client wants to be part of session.
         """
-        caps = ":".join([''] + list(self.state.client_capabilities) + [''])
-        self.send(MSG_ANNOUNCE, app_name, caps, executable,
+        caps = ":".join([''] + list(self.capabilities) + [''])
+        self.send(MSG_ANNOUNCE, self.app_name, caps, executable,
                   API_VERSION_MAJOR, API_VERSION_MINOR, pid)
 
     def close(self):
@@ -177,7 +244,7 @@ class NSMClient(object):
         # For example the JACK engine which is by definition started
         # AFTER nsm-open
         log.debug("Client shutdown.")
-        self.quit_cb(self)
+        self.quit()
         self.osc_server.stop()
         sys.exit()
         log.debug("I'm a zombie.")
@@ -186,7 +253,8 @@ class NSMClient(object):
     def handle_open(self, path, args, types):
         """Handle open message received from NSM server.
 
-        /nsm/client/open s:instance_specific_path_to_project s:session_name s:client_id
+        /nsm/client/open s:instance_specific_path_to_project s:session_name
+                         s:client_id
 
         A response is REQUIRED as soon as the open operation has been
         completed. Ongoing progress may be indicated by sending messages to
@@ -197,8 +265,8 @@ class NSMClient(object):
         state = self.state
         state.path_prefix, state.session_name, state.client_id = args
         # Call the open callback function
-        res, filename_or_msg = self.open_cb(self, state.path_prefix,
-                                            state.client_id)
+        res, filename_or_msg = self.open_session(state.path_prefix,
+                                                 state.client_id)
 
         if res:
             state_file = join(state.path_prefix, filename_or_msg)
@@ -255,7 +323,7 @@ class NSMClient(object):
         """
         log.debug("save message received: %s %r", path, args)
         # Call the save callback function
-        res, filename_or_msg = self.save_cb(self, self.state.path_prefix)
+        res, filename_or_msg = self.save_session(self.state.path_prefix)
 
         if res:
             state_file = join(self.state.path_prefix, filename_or_msg)
@@ -277,7 +345,7 @@ class NSMClient(object):
         /nsm/client/session_is_loaded
 
         """
-        self.session_loaded_cb(self)
+        self.session_loaded(self)
 
     def handle_reply(self, path, args, types):
         """Handle /reply messages received from NSM server.
@@ -309,14 +377,16 @@ class NSMClient(object):
     def handle_welcome(self, welcome_msg, nsm_name, capabilities):
         """Handle welcome message received from NSM server.
 
-        /reply "/nsm/server/announce" s:message s:name_of_session_manager s:capabilities
+        /reply "/nsm/server/announce" s:message s:name_of_session_manager
+               s:capabilities
 
         Receiving this message means we are now part of a session.
 
         """
         self.state.welcome_msg = welcome_msg
         self.state.nsm_name = nsm_name
-        self.state.server_capabilities = set(capabilities.strip(':').split(':'))
+        self.state.server_capabilities = set(
+            capabilities.strip(':').split(':'))
 
     # GUI
     def handle_show_gui(self, *args):
@@ -327,7 +397,7 @@ class NSMClient(object):
 
         """
         if "optional-gui" in self.state.server_capabilities:
-            if self.show_gui_cb(self):
+            if self.show_gui():
                 self.send(MSG_GUI_SHOWN)
         else:
             log.warning("%s message received but server capabilities do not "
@@ -341,19 +411,11 @@ class NSMClient(object):
 
         """
         if "optional-gui" in self.state.server_capabilities:
-            if self.hide_gui_cb(self):
+            if self.hide_gui():
                 self.send(MSG_GUI_HIDDEN)
         else:
             log.warning("%s message received but server capabilities do not "
                         "include 'optional-gui'.", MSG_HIDE_GUI)
-
-    def unimplemented_cb(self, *args, **kwargs):
-        """Handle any messages for which no callback function has been set."""
-        log.debug("Fallback implementation called with %r, %r", args, kwargs)
-        curframe = inspect.currentframe()
-        calframe = inspect.getouterframes(curframe, 2)
-        log.debug('Called by: %s', calframe[1][3])
-        return True, "Fine"
 
     def send(self, *args, **kwargs):
         """Send an OSC mesage to the NSM server.
@@ -364,7 +426,7 @@ class NSMClient(object):
 
         """
         log.debug("Sending OSC to '%s': %r %r",
-                   self.state.nsm_url, args, kwargs)
+                  self.state.nsm_url, args, kwargs)
         self.osc_server.send(self.state.nsm_url, *args, **kwargs)
 
     def send_error(self, msg, code=-1, path=MSG_ANNOUNCE):
@@ -385,7 +447,7 @@ class NSMClient(object):
         should include :message: in their announce capability string.
 
         """
-        if "message" in self.state.client_capabilities:
+        if "message" in self.capabilities:
             self.send(MSG_MESSAGE, int(priority), str(message))
         else:
             log.warning("The client tried to send a status message but was "
@@ -407,7 +469,7 @@ class NSMClient(object):
         capability string.
 
         """
-        if "dirty" in self.state.client_capabilities:
+        if "dirty" in self.capabilities:
             if dirty and not self.state.dirty:
                 self.state.dirty = True
                 self.send(MSG_DIRTY)
@@ -442,7 +504,7 @@ class NSMClient(object):
         the user.
 
         """
-        if "progress" in self.state.client_capabilities:
+        if "progress" in self.capabilities:
             self.send(MSG_PROGRESS, float(progress))
         else:
             log.warning("The client tried to send a progress update but was "
@@ -451,79 +513,54 @@ class NSMClient(object):
                         "setting the 'progress' capability flag or remove the "
                         "progress update from the code.")
 
+    # Methods to implement
 
-def init(app_name, capabilities, requiredFunctions, optionalFunctions,
-         startsWithGui=True, executable=None):
-    """Create an NSMClient instance and announce it to the NSM server.
+    # Required methods
+    @abc.abstractmethod
+    def open_session(self, session_path, client_id):
+        """Open or create a sesssion.
 
-    Also sets the message handler callback functions from the provided
-    lookup dictionaries.
+        Return a tuple of (status, filename_or_message)
+        """
 
-    app_name = "Super Client"
+    @abc.abstractmethod
+    def save_session(self, session_path, client_id):
+        """Save the current sesssion.
 
-    You must not change the app_name after your software is released and used
-    in people's sessions. The NSM server provides a path for the session files
-    to your application and bases this on the app_name. Changing the app_name
-    would be like telling NSM we are a different program now.
+        Return a tuple of (status, filename_or_message)
+        """
 
-    Returns the created NSMClient instance.
+    # Required properties
 
-    """
-    state = ClientState(os.getenv("NSM_URL"))
+    @property
+    @abc.abstractmethod
+    def app_name(self):
+        """Return display name of application."""
 
-    if not state.nsm_url:
-        raise RuntimeError("Non-Session-Manager environment variable $NSM_URL "
-                           "not found. This program must be run via a Non "
-                           "Session manager.")
-        sys.exit(1)
+    # Optional properties
+    @abc.abstractmethod
+    def capabilities(self):
+        """Return sequence of client capabilities.
 
-    caps = {key for key, value in capabilities.items() if value}
-    state.client_capabilities = caps
-    client = NSMClient(state)
+        Capabilities are defined as constants CAP_DRTY, CAP_MESSAGE,
+        CAP_PROGRESS, CAP_OPTIONAL_GUI and CAP_SWITCH.
 
-    for identifier, function in requiredFunctions.items():
-        setattr(client, identifier + '_cb', function)
+        """
 
-    for identifier, function in optionalFunctions.items():
-        if function:
-            setattr(client, identifier + '_cb', function)
+    # Optional methods
 
-    # Finally tell NSM we are ready and start the main loop
-    # __main__.__file__ stands for the executable name
+    def quit(self):
+        pass
 
-    # XXX: Funky!
-    import __main__
+    def show_gui(self):
+        if CAP_OPTIONAL_GUI not in self.capabilities:
+            raise RuntimeError(
+                "Client does not have 'optional-gui' capability.")
 
-    if not executable:
-        if dirname(__main__.__file__) in os.environ["PATH"].split(os.pathsep):
-            executable = basename(__main__.__file__)
-        else:
-            executable = abspath(__main__.__file__)
+    def hide_gui(self):
+        if CAP_OPTIONAL_GUI not in self.capabilities:
+            raise RuntimeError(
+                "Client does not have 'optional-gui' capability.")
 
-    client.announce(app_name, executable, os.getpid())
-
-    # Wait for the welcome message.
-    s = time.time()
-    while not state.welcome_msg:
-        time.sleep(.1)
-        if time.time() - s > 5:
-            raise RuntimeError("No response from NSM server.")
-
-    # If the optional-gui capability is not present then clients with
-    # optional GUIs MUST always keep them visible
-    if "optional-gui" in state.client_capabilities:
-        if "optional-gui" in state.server_capabilities:
-            if startsWithGui:
-                client.show_gui_cb(client)
-                client.send(MSG_GUI_SHOWN)
-            else:
-                client.hide_gui_cb(client)
-                client.send(MSG_GUI_HIDDEN)
-        else:
-            # Call show_gui_cb once.
-            # All other OSC messages from client will be ignored.
-            client.show_gui_cb(client)
-            client.send(MSG_GUI_SHOWN)
-
-    # loop and dispatch messages every 100ms
-    return client
+    def session_loaded(self):
+        self.state.session_loaded = True
