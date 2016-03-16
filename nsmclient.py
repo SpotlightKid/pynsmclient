@@ -530,15 +530,14 @@ class NSMClient(abc.ABC):
         Return a tuple of (status, filename_or_message)
         """
 
-    # Required properties
+    # Optional properties
 
     @property
-    @abc.abstractmethod
     def app_name(self):
         """Return display name of application."""
+        return self.__class__.__name__
 
-    # Optional properties
-    @abc.abstractmethod
+    @property
     def capabilities(self):
         """Return sequence of client capabilities.
 
@@ -546,6 +545,7 @@ class NSMClient(abc.ABC):
         CAP_PROGRESS, CAP_OPTIONAL_GUI and CAP_SWITCH.
 
         """
+        return ()
 
     # Optional methods
 

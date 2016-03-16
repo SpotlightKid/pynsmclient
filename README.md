@@ -39,10 +39,28 @@ In your own program:
 
     import nsmclient
 
-Then call `nsmclient.init()` with the correct parameters.
+`NSMClient` is an abstract base class. You must sub-classs it and implement at
+least the following methods and properties:
 
-Please see `example.py`, a well documented, minimal and working example.
-Only 30 lines of code.
+    def MyApp(nsmclient.NSMClient):
+
+        def open_session(self, session-path, client_id):
+            return status, filename_or_msg
+
+        def save_session(self, session_path, client_id):
+            return status, filename_or_msg
+
+Additionally you should probably implement these read-only property methods:
+
+    @property
+    def app_name(self):
+        return "MyApp"
+
+    @property
+    def capabilities(self):
+        return (nsmclient.CAP_MESSAGE, nsmclient.CAP_PROGRESS, ...)
+
+Please see `example_oo.py` for a minimal and working example.
 
 The important part is that your application follows the NSM rules (see
 example.py documentation and NSM website http://non.tuxfamily.org/nsm/API.html)
