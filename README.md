@@ -15,8 +15,8 @@ Non Session Manager Author:
 Jonathan Moore Liles  <male@tuxfamily.org> http://non.tuxfamily.org/nsm/
 
 
-Purpose
--------
+Overview
+--------
 
 *nsmclient* is a Python 3 client library for the [Non Session Management]
 protocol and a convenience wrapper around a [liblo]-based [OSC] server and
@@ -24,8 +24,8 @@ client, which makes it easy to support NSM in your Python programs. You don't
 need any OSC knowledge to use this package.
 
 
-Instructions
-------------
+Usage Instructions
+------------------
 
 Copy `nsmclient.py` into your source directory or use
 
@@ -33,15 +33,15 @@ Copy `nsmclient.py` into your source directory or use
 
 to install `nsmclient.py` system-wide. Both variants are equally good. Just
 copying it to your own source tree does not require your users to install
-nsmclient themselves. Since this is a really small lib I recommend this
+nsmclient themselves. Since this is a really small lib, I recommend this
 approach.
 
 In your own program:
 
     import nsmclient
 
-`NSMClient` is an abstract base class. You must sub-classs it and implement at
-least the following methods and properties:
+The `nsmclient` module provides `NSMClient`, an abstract base class. You must
+sub-class it and implement at least the following methods:
 
     def MyApp(nsmclient.NSMClient):
 
@@ -61,7 +61,41 @@ Additionally you should probably implement these read-only property methods:
     def capabilities(self):
         return (nsmclient.CAP_MESSAGE, nsmclient.CAP_PROGRESS, ...)
 
+Then instantiate your class and enter you main event loop.
+
 Please see `example.py` for a minimal and working example.
+
+Additional methods you can subclass are:
+
+    def quit(self):
+        """Called before program exits."
+
+    def show_gui(self):
+        """Called when NSM tells your program to open its GUI."""
+
+    def hide_gui(self):
+        """Called when NSM tells your program to close its GUI."""
+
+    def session_loaded(self):
+        """Called when NSM tells your program the entire session was loaded."""
+
+The return value is of these methods is ignored.
+
+Furthermore, there are some methods provided by `NSMClient`, which your
+sub-class may want to use:
+
+    # set program label in NSM GUI
+    set_label(name)
+
+    # report session "dirty" statsu to NSM
+    set_dirty(bool)
+
+    # send status message to NSM
+    send_message(message, priority=0)
+
+    # report progress of current operation (e.g. open or save) to NSM
+    # 0.0 <= value <= 1.0
+    update_progress(value)
 
 The important part is that your application follows the NSM rules (see
 example.py documentation and NSM website http://non.tuxfamily.org/nsm/API.html)
