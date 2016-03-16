@@ -60,7 +60,7 @@ Additionally you should probably implement these read-only property methods:
     def capabilities(self):
         return (nsmclient.CAP_MESSAGE, nsmclient.CAP_PROGRESS, ...)
 
-Please see `example_oo.py` for a minimal and working example.
+Please see `example.py` for a minimal and working example.
 
 The important part is that your application follows the NSM rules (see
 example.py documentation and NSM website http://non.tuxfamily.org/nsm/API.html)
