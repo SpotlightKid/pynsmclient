@@ -22,16 +22,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Usage:
 
-Import this file from your python application with::
-
-    import nsmclient
-
-and then call ``nsmclient.init()`` with the right parameters.
-
-See the file ``example.py`` in the source distribution for a detailed example
-with extensive comments.
+See the file README.md in the source distribution / code repository for
+usage instructions.
 
 """
 
