@@ -65,7 +65,7 @@ Then instantiate your class and enter your main event loop.
 
 Please see `example.py` for a minimal and working example.
 
-Additional methods you can subclass are:
+Additional methods your subclass can provide are:
 
     def quit(self):
         """Called before program exits."
