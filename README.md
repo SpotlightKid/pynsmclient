@@ -98,16 +98,16 @@ sub-class may want to use:
     update_progress(value)
 
 The important part is that your application follows the NSM rules - see the
-[API documentation](http://non.tuxfamily.org/nsm/API.html) on the NSM website.
+[API documentation] on the NSM website.
 
 
 Dependencies
 ------------
 
-* [Non Session Manager](http://non.tuxfamily.org/nsm/)
-* [liblo](http://liblo.sourceforge.net/) - an OSC library written in C
+* [Non Session Manager]
+* [liblo] - an OSC library written in C
   (tested with version 0.28)
-* [pyliblo](http://das.nasophon.de/pyliblo/) - Python 3 bindings for liblo
+* [pyliblo] - Python 3 bindings for liblo
   (tested with version 0.10.0)
 
 
@@ -128,5 +128,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+[Non Session Manager]: http://non.tuxfamily.org/nsm/
 [Non Session Management]: http://non.tuxfamily.org/wiki/Non%20Session%20Manager
+[API documentation]: http://non.tuxfamily.org/nsm/API.html
 [OSC]: http://opensoundcontrol.org/
+[liblo]: http://liblo.sourceforge.net/
+[pyliblo]: http://das.nasophon.de/pyliblo/
