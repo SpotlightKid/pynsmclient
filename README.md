@@ -97,8 +97,8 @@ sub-class may want to use:
     # 0.0 <= value <= 1.0
     update_progress(value)
 
-The important part is that your application follows the NSM rules (see
-example.py documentation and NSM website http://non.tuxfamily.org/nsm/API.html)
+The important part is that your application follows the NSM rules - see the
+[API documentation](http://non.tuxfamily.org/nsm/API.html) on the NSM website.
 
 
 Dependencies
