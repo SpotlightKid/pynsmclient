@@ -26,7 +26,7 @@ class MyAppNSMClient(NSMClient):
         # status, filename_or_msg
         return True, "myapp.dat"
 
-    def session_quit(self, session_path):
+    def quit(self):
         self.send_message("Preparing to quit. Wait for progress to finish.")
         # Fake quit process
         self.update_progress(0.1)
