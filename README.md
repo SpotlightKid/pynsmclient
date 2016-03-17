@@ -68,7 +68,7 @@ Please see `example.py` for a minimal and working example.
 Additional methods your subclass can provide are:
 
     def quit(self):
-        """Called before program exits."
+        """Called before program exits."""
 
     def show_gui(self):
         """Called when NSM tells your program to open its GUI."""
