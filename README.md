@@ -46,19 +46,23 @@ sub-class it and implement at least the following methods:
     def MyApp(nsmclient.NSMClient):
 
         def open_session(self, session-path, client_id):
+            """Open/create a sesssion and return status and filename or error."""
             return status, filename_or_msg
 
         def save_session(self, session_path, client_id):
+            """Save current sesssion and return status and filename or error."""
             return status, filename_or_msg
 
 Additionally you should probably implement these read-only property methods:
 
     @property
     def app_name(self):
+        """Return name of application as displayed in NSM GUI."""
         return "MyApp"
 
     @property
     def capabilities(self):
+        """Return sequence of client capabilities."""
         return (nsmclient.CAP_MESSAGE, nsmclient.CAP_PROGRESS, ...)
 
 Then instantiate your class and enter your main event loop.

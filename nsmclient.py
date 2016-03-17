@@ -511,23 +511,24 @@ class NSMClient(abc.ABC):
     # Required methods
     @abc.abstractmethod
     def open_session(self, session_path, client_id):
-        """Open or create a sesssion.
+        """Open/create a sesssion and return status and filename or error.
 
         Return a tuple of (status, filename_or_message)
         """
 
     @abc.abstractmethod
     def save_session(self, session_path, client_id):
-        """Save the current sesssion.
+        """Save current sesssion and return status and filename or error.
 
         Return a tuple of (status, filename_or_message)
+
         """
 
     # Optional properties
 
     @property
     def app_name(self):
-        """Return display name of application."""
+        """Return name of application as displayed in NSM GUI."""
         return self.__class__.__name__
 
     @property
