@@ -61,7 +61,7 @@ Additionally you should probably implement these read-only property methods:
     def capabilities(self):
         return (nsmclient.CAP_MESSAGE, nsmclient.CAP_PROGRESS, ...)
 
-Then instantiate your class and enter you main event loop.
+Then instantiate your class and enter your main event loop.
 
 Please see `example.py` for a minimal and working example.
 
@@ -84,16 +84,16 @@ The return value is of these methods is ignored.
 Furthermore, there are some methods provided by `NSMClient`, which your
 sub-class may want to use:
 
-    # set program label in NSM GUI
+    # Set program label in NSM GUI
     set_label(name)
 
-    # report session "dirty" statsu to NSM
+    # Report session "dirty" status to NSM
     set_dirty(bool)
 
-    # send status message to NSM
+    # Send status message to NSM
     send_message(message, priority=0)
 
-    # report progress of current operation (e.g. open or save) to NSM
+    # Report progress of current operation (e.g. open or save) to NSM
     # 0.0 <= value <= 1.0
     update_progress(value)
 
