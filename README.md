@@ -129,4 +129,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 [Non Session Management]: http://non.tuxfamily.org/wiki/Non%20Session%20Manager
-[OSC]: http://opensouncontrol.org/
+[OSC]: http://opensoundcontrol.org/
