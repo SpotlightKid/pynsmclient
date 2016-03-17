@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""A Python 3 client library for the Non Session Management protocol."""
 
 from distutils.core import setup
 
@@ -13,9 +14,6 @@ setup(
     maintainer="Christopher Arndt",
     maintainer_email="chris@chrisarndt.de",
     url="https://github.com/SpotlightKid/pynsmclient",
-    description="""\
-Python nsmclient is a convenience wrapper around liblo and the NSM-OSC protocol
-to implement Non Session Management support easily in your own Python programs.
-""",
+    description=__doc__,
     license="GPLv3+"
 )
