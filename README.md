@@ -45,13 +45,34 @@ sub-class it and implement at least the following methods:
 
     def MyApp(nsmclient.NSMClient):
 
-        def open_session(self, session-path, client_id):
-            """Open/create a sesssion and return status and filename or error."""
-            return status, filename_or_msg
+        def open_session(self, session_prefix, session_name, client_id):
+            """Open/create a session and return session path (or suffix)."""
+            return session_path
 
-        def save_session(self, session_path, client_id):
-            """Save current sesssion and return status and filename or error."""
-            return status, filename_or_msg
+        def save_session(self, session_path):
+            """Save current session."""
+            return session_path
+
+The session path returned by `open_session` must either start with the passed
+`session_prefix` or be a suffix to append to it. `session_name` is the name
+of the session for display purposes.
+
+If a session file for the client exists at `session_path`, the client must
+immediately open it in `open_session`. The `save_session` method must save the
+client's state at the given `session_path`, which will include the the
+`session_prefix` passed to `open_session` and the `session_path` (suffix)
+returned by it.
+
+The client must not assume that `session_path` already exists. It is up to the
+client to create what it needs. If the client needs a directory to create or
+save its session state, it must create the directory at ``session_path``.
+
+If opening or saving a session fails, the client should raise an appropriate
+exception. The string value of the exception provides the error message sent to
+the server. If the exception instance has a `code` attribute, its value is used
+as the error code sent to the server. The `nsmclient.ErrCode` enum defines the
+supported error code values. If the error code is not set, `ErrCode.GENERAL` is
+used.
 
 Additionally you should probably implement these read-only property methods:
 
@@ -75,18 +96,18 @@ Additional methods your subclass can provide are:
         """Called before program exits."""
 
     def show_gui(self):
-        """Called when NSM tells your program to open its GUI."""
+        """Called when NSM tells the client to open its GUI."""
 
     def hide_gui(self):
-        """Called when NSM tells your program to close its GUI."""
+        """Called when NSM tells the client to close its GUI."""
 
     def session_loaded(self):
-        """Called when NSM tells your program the entire session was loaded."""
+        """Called when NSM tells the client the entire session was loaded."""
 
 The return value is of these methods is ignored.
 
-Furthermore, there are some methods provided by `NSMClient`, which your
-sub-class may want to use:
+Furthermore, there are some methods provided by `nsmclient.NSMClient`, which
+your sub-class may want to use:
 
     # Set program label in NSM GUI
     set_label(name)
