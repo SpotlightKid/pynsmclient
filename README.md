@@ -95,14 +95,14 @@ Additional methods your subclass can provide are:
     def quit(self):
         """Called before program exits."""
 
-    def show_gui(self):
-        """Called when NSM tells the client to open its GUI."""
-
     def hide_gui(self):
         """Called when NSM tells the client to close its GUI."""
 
     def session_loaded(self):
         """Called when NSM tells the client the entire session was loaded."""
+
+    def show_gui(self):
+        """Called when NSM tells the client to open its GUI."""
 
 The return value is of these methods is ignored.
 

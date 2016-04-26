@@ -559,7 +559,11 @@ class NSMClient(abc.ABC):
 
         """
         if "optional-gui" in self.state.server_capabilities:
-            if self.hide_gui():
+            try:
+                self.hide_gui()
+            except:
+                log.exception("Error in 'hide_gui()' method.")
+            else:
                 self.send(MSG_GUI_HIDDEN)
         else:
             log.warning("%s message received but server capabilities do not "
@@ -573,7 +577,11 @@ class NSMClient(abc.ABC):
 
         """
         if "optional-gui" in self.state.server_capabilities:
-            if self.show_gui():
+            try:
+                self.show_gui()
+            except:
+                log.exception("Error in 'show_gui()' method.")
+            else:
                 self.send(MSG_GUI_SHOWN)
         else:
             log.warning("%s message received but server capabilities do not "
@@ -634,12 +642,12 @@ class NSMClient(abc.ABC):
         """Called before program exits."""
         pass
 
+    def session_loaded(self):
+        """Called when NSM tells the client the entire session was loaded."""
+        self.state.session_loaded = True
+
     def show_gui(self):
         """Called when NSM tells the client to open its GUI."""
         if CAP_OPTIONAL_GUI not in self.capabilities:
             raise RuntimeError(
                 "Client does not have 'optional-gui' capability.")
-
-    def session_loaded(self):
-        """Called when NSM tells the client the entire session was loaded."""
-        self.state.session_loaded = True
