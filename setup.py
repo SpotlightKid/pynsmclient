@@ -15,5 +15,6 @@ setup(
     maintainer_email="chris@chrisarndt.de",
     url="https://github.com/SpotlightKid/pynsmclient",
     description=__doc__,
-    license="GPLv3+"
+    license="GPLv3+",
+    install_requires=["pyliblo"]
 )
