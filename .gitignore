@@ -1,5 +1,6 @@
 build/
 dist/
 __pycache__
-.py[co]
+*.egg-info
+*.py[co]
 MANIFEST
